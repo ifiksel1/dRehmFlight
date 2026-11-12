@@ -24,6 +24,22 @@
 #elif defined(IMU_ICM42688)
   #include "src/sensors/imu_icm42688.h"
   static ImuIcm42688 imu;
+#elif defined(IMU_ICM45686)
+  #include "src/sensors/imu_icm45686.h"
+  static ImuIcm45686 imu(pins::IMU_CS);
+#elif defined(IMU_BMI088)
+  #include "src/sensors/imu_bmi088.h"
+  static ImuBmi088 imu(pins::IMU3_CS_ACCEL, pins::IMU3_CS_GYRO);
+#elif defined(IMU_MULTI) && defined(BOARD_FMU_RT1062)
+  // FMU module: two ICM-45686 and one BMI088 on the shared SPI bus.
+  #include "src/sensors/imu_multi.h"
+  #include "src/sensors/imu_icm45686.h"
+  #include "src/sensors/imu_bmi088.h"
+  static ImuIcm45686 sub_imu_0(pins::IMU_CS);
+  static ImuIcm45686 sub_imu_1(pins::IMU2_CS);
+  static ImuBmi088   sub_imu_2(pins::IMU3_CS_ACCEL, pins::IMU3_CS_GYRO);
+  static IMU* sub_imus[] = { &sub_imu_0, &sub_imu_1, &sub_imu_2 };
+  static MultiImu imu(sub_imus, sizeof(sub_imus) / sizeof(sub_imus[0]));
 #elif defined(IMU_MULTI)
   // Multi-IMU fusion — edit this block to match the chips on your board.
   // Median-of-3 voting needs >=3 sub-IMUs; N=2 averages; N=1 passes through.
@@ -51,6 +67,10 @@
 #if defined(BARO_BMP585)
   #include "src/sensors/baro_bmp585.h"
   static BaroBmp585 baro;
+  #define HAVE_BARO 1
+#elif defined(BARO_BMP390)
+  #include "src/sensors/baro_bmp390.h"
+  static BaroBmp390 baro;
   #define HAVE_BARO 1
 #else
   #define HAVE_BARO 0

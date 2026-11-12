@@ -10,13 +10,14 @@ static bool safety_pressed() {
 #if defined(BOARD_TEENSY41_DEFAULT)
   return false;
 #else
+  if (pins::SAFETY_BTN < 0) return false;   // board has no safety button on a Teensy pin
   return digitalReadFast(pins::SAFETY_BTN) == LOW;
 #endif
 }
 
 void begin() {
 #if !defined(BOARD_TEENSY41_DEFAULT)
-  pinMode(pins::SAFETY_BTN, INPUT_PULLUP);
+  if (pins::SAFETY_BTN >= 0) pinMode(pins::SAFETY_BTN, INPUT_PULLUP);
 #endif
 }
 

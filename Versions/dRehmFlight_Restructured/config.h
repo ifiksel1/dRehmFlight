@@ -14,7 +14,10 @@
 // #define IMU_BMI270
 // #define IMU_ICM20948      // has onboard mag; MAG_* is ignored
 // #define IMU_ICM42688
-// #define IMU_MULTI         // fuse multiple IMUs — edit sub-IMU list in the .ino
+// #define IMU_ICM45686      // needs the TDK "ICM45686" Arduino library
+// #define IMU_BMI088
+// #define IMU_MULTI         // fuse multiple IMUs — sub-IMU list is in the .ino
+//                              (BOARD_FMU_RT1062: 2x ICM-45686 + BMI088)
 
 // #define MAG_NONE
 #define MAG_NONE
@@ -23,6 +26,7 @@
 // #define BARO_NONE
 #define BARO_NONE
 // #define BARO_BMP585
+// #define BARO_BMP390       // also reads a BMP388 (same register map)
 
 // ---- Motor protocol (pick one) ----------------------------------------------
 
@@ -132,6 +136,11 @@ static constexpr uint16_t CH6_FS = 2000;  // aux1
 // Default mapping is for the Spin 1 custom RT1062 flight controller (see
 // pin_allocation.xlsx). To build for a bare Teensy 4.1 with the original
 // Beta 1.3 layout instead, define BOARD_TEENSY41_DEFAULT before including this.
+// For the RT1062 FMU module on the mezzanine carrier system, define
+// BOARD_FMU_RT1062 (pin numbers are Teensy 4.1 pin numbers; see the module's
+// pinmap.tsv).
+
+// #define BOARD_FMU_RT1062
 
 #if defined(BOARD_TEENSY41_DEFAULT)
 namespace pins {
@@ -144,6 +153,44 @@ namespace pins {
   constexpr int LED    = LED_BUILTIN;    // onboard LED on pin 13
   // CRSF / SBUS UART fallback
   #define CRSF_SERIAL Serial5
+}
+#elif defined(BOARD_FMU_RT1062)
+#if defined(RC_PWM) || defined(RC_PPM)
+  #error "BOARD_FMU_RT1062 has no PWM/PPM receiver inputs on Teensy pins: use RC_CRSF, RC_SBUS or RC_DSM"
+#endif
+namespace pins {
+  // No per-channel PWM / PPM receiver inputs on this module.
+  constexpr int CH1 = -1, CH2 = -1, CH3 = -1, CH4 = -1, CH5 = -1, CH6 = -1;
+  constexpr int PPM = -1;
+
+  // Mezzanine PWM1..6. PWM7..10 are the servo outputs below.
+  constexpr int M[6] = {2, 3, 4, 5, 6, 9};
+  constexpr int SERVO[4] = {36, 37, 28, 29};
+
+  // Three IMUs share the Teensy SPI bus (pins 11/12/13), one chip select each.
+  constexpr int IMU_CS        = 10;   // IMU 1: ICM-45686
+  constexpr int IMU2_CS       = 48;   // IMU 2: ICM-45686
+  constexpr int IMU3_CS_ACCEL = 49;   // IMU 3: BMI088 accelerometer
+  constexpr int IMU3_CS_GYRO  = 50;   // IMU 3: BMI088 gyro
+  constexpr int IMU_SPI_CS_ALL[4] = {IMU_CS, IMU2_CS, IMU3_CS_ACCEL, IMU3_CS_GYRO};
+
+  constexpr int IMU_INT_PRIMARY = 51; // IMU 1 data-ready
+  constexpr int IMU2_INT        = 52;
+  constexpr int IMU3_INT        = 53; // BMI088 gyro data-ready
+  constexpr int IMU_SYNC        = 33; // optional clock out to both ICM-45686 CLKIN pins (not driven yet)
+  constexpr int HEATER          = 54; // IMU heater, active high (not driven yet)
+
+  // Peripherals (through the mezzanine)
+  constexpr int SAFETY_BTN      = -1; // on GPIO2_IO04, which has no Teensy pin number
+  constexpr int BUZZER          = 35;
+  constexpr int LED             = 34;
+  constexpr int ESC_CURRENT_ADC = 41; // mezzanine ADC_IBATT (A17), 0-1.8 V at the connector
+  constexpr int VBAT_ADC        = 40; // mezzanine ADC_VBATT (A16), 0-1.8 V at the connector
+
+  // Receiver on mezzanine UART5 = Serial5 (pins 20/21).
+  #define CRSF_SERIAL Serial5
+  // Barometer and carrier-ID EEPROM on Wire2 (pins 24/25).
+  #define BARO_WIRE Wire2
 }
 #else  // BOARD_CUSTOM_RT1062 (default)
 namespace pins {
