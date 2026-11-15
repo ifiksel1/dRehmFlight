@@ -1,5 +1,5 @@
 #include "../../config.h"
-#if defined(IMU_ICM20948) || defined(IMU_MULTI)
+#if defined(IMU_ICM20948) || (defined(IMU_MULTI) && !defined(BOARD_FMU_RT1062))
 #include "imu_icm20948.h"
 #include <SPI.h>
 

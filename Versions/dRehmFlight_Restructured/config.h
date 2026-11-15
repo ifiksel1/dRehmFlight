@@ -141,6 +141,8 @@ static constexpr uint16_t CH6_FS = 2000;  // aux1
 // pinmap.tsv).
 
 // #define BOARD_FMU_RT1062
+// FMU module build (compiled with Teensyduino 1.62 + TDK ICM45686 1.1.9): IMU_MULTI,
+// BARO_BMP390, MAG_NONE, MOTORS_DSHOT and RC_CRSF (or RC_SBUS / RC_DSM).
 
 #if defined(BOARD_TEENSY41_DEFAULT)
 namespace pins {
