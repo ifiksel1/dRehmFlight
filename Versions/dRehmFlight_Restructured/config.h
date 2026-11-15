@@ -177,7 +177,7 @@ namespace pins {
   constexpr int IMU_INT_PRIMARY = 51; // IMU 1 data-ready
   constexpr int IMU2_INT        = 52;
   constexpr int IMU3_INT        = 53; // BMI088 gyro data-ready
-  constexpr int IMU_SYNC        = 33; // optional clock out to both ICM-45686 CLKIN pins (not driven yet)
+  constexpr int IMU_SYNC        = 33; // optional clock out to the second ICM-45686 CLKIN (U7); U6 pin 9 is open since hardware rev 0.3 (not driven yet)
   constexpr int HEATER          = 54; // IMU heater, active high (not driven yet)
 
   // Peripherals (through the mezzanine)
